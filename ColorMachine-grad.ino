@@ -1,6 +1,7 @@
-#include <AccelStepper.h>
+//#include <AccelStepper.h>
 
-AccelStepper stepper; // Defaults to AccelStepper::FULL4WIRE (4 pins) on 2, 3, 4, 5
+#include "ServoAbstractions.h"
+
 
 //////// TCS3200 init////////////////////////////
 /////// variable names are from the official TCS3200 documentation.
@@ -23,16 +24,15 @@ AccelStepper stepper; // Defaults to AccelStepper::FULL4WIRE (4 pins) on 2, 3, 4
 #define stepperPin4  11     // IN4 on the ULN2003 driver
 
 // Servo motor init
-#define servoPin 3
+#define servoPin 7
 
 // TODO: Add LCD, Buttons and SDcard.
 
 void setup() {
-  // put your setup code here, to run once:
-
+  ServoInit();
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-
+  PushItem();
 }
