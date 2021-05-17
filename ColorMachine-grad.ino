@@ -1,18 +1,13 @@
 
 #include "ServoAbstractions.h"
+#include <tcs3200.h>
 
+//////// PIN DEFINITIONS ////////////////////////
 
 //////// TCS3200 init////////////////////////////
-/////// variable names are from the official TCS3200 documentation.
-// digital
-#define S0 0
-#define S3 1
-#define led 2
-#define sensorOut 4
 
-// pwm
-#define S1 5
-#define S2 6
+// (S0, S1, S2, S3, output pin)  //
+tcs3200 tcs(0, 5, 6, 1, 4);
 
 ////// Stepper motor init //////////////////////
 // Digital
@@ -26,6 +21,7 @@
 #define servoPin 7
 
 // TODO: Add LCD, Buttons and SDcard.
+//////////////////////////////////////////////////
 
 void setup() {
   ServoInit();
