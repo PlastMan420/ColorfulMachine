@@ -1,3 +1,8 @@
+/*
+* Servo Motor Abstraction Methods.
+* #define servoPin 7
+*/
+
 #include <Servo.h>
 
 Servo servo;
