@@ -6,7 +6,7 @@
   #define TCS_S1pwm 44
   #define TCS_S2pwm 46
   #define TCS_S3 48
-  #define TCS_Sout 52
+  #define TCS_Sout 38
   #define TCS_LED 40
 
   // Functions
