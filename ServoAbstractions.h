@@ -1,6 +1,7 @@
-#ifndef SERVOABSTRACTIONS_H
-  #define SERVOABSTRACTIONS_H
+#pragma once
 
-  void ServoInit();
-  void PushItem();
-#endif
+#define SERVO_PIN 31
+
+void ServoInit();
+void PushItem();
+

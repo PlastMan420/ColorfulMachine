@@ -1,15 +1,11 @@
-/*
-* Servo Motor Abstraction Methods.
-* #define servoPin 7
-*/
-
 #include <Servo.h>
+#include "ServoAbstractions.h"
 
 Servo servo;
 
 void ServoInit()
 {
-  servo.attach(servoPin);
+  servo.attach(SERVO_PIN);
   servo.write(0);
   delay(1000);
 }
