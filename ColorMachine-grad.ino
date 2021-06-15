@@ -2,10 +2,11 @@
 #include <semphr.h>  // add the FreeRTOS functions for Semaphores (or Flags).
 
 #include <LiquidCrystal.h>
-#include "menu/LcdKeypad.h"
-#include "menu/MenuData.h"
+#include "./menu/LcdKeypad.h"
+#include "./menu/MenuData.h"
 
 #include "colorsensor.h"
+#include "StepperAbstractions.h"
 
 #define debug true
 
@@ -53,10 +54,14 @@ void setup()
   setBacklightBrightness(1);
   //////////////////////////////////////////////////////
 
-  // Color sensor /////////////////////////////////////
+///////////////// HARDWARE ///////////////////////////////////////////
+  // Color sensor //
   pinMode(TCS_LED, OUTPUT);
   digitalWrite(TCS_LED, LOW); //LEDs OFF
-  //////////////////////////////////////////////////////
+  ///////////////////////////////////////
+  // Stepper Motor
+  StepperInit();
+
 
   // Operating System ///////////////////////////////////
   // Create a mutx for serial.
@@ -72,7 +77,7 @@ void setup()
   xTaskCreate(
     TaskMenu
     , "Menu"
-    , 128,
+    , 128
     , NULL 
     , 3
     , &menuTaskHandle
