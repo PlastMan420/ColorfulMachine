@@ -9,9 +9,10 @@
   #define TCS_Sout 38
   #define TCS_LED 40
 
+  // Tasks
+  void TaskColorSensor(void *pvParameters __attribute__((unused)));
+
   // Functions
   void Sense();
   
-  // Tasks
-  void TaskColorSensor(void *pvParameters __attribute__((unused)));
 #endif

@@ -7,18 +7,25 @@
 // (S0, S1, S2, S3, output pin)  //
 tcs3200 tcs(TCS_S0, TCS_S1pwm, TCS_S2pwm, TCS_S3, TCS_Sout);
 
-float r, g, b;
-uint16_t red, green, blue, clear;
-//uint32_t sum;
-
 // Tasks ////////////////////////////////////////////////////////////////
 void TaskColorSensor(void *pvParameters __attribute__((unused))) {
   //Serial.println("Resuming color sensor task");
-  Serial.println("Sensor Process Started");
+
+  if(debug) Serial.println("Sensor Process Started");
   pinMode(TCS_LED, OUTPUT);
 
   for (;;) // A Task shall never return or exit.
   {
+    // Readings with LED ON
+    digitalWrite(TCS_LED, HIGH);
+    vTaskDelay(20);
+    // Take X readings.
+    sense();
+
+    // Readings with LED ON
+    digitalWrite(TCS_LED, LOW);
+    vTaskDelay(20);
+    // Take X readings.
     sense();
 
     vTaskSuspend(NULL); //Suspend Own Task
@@ -28,29 +35,19 @@ void TaskColorSensor(void *pvParameters __attribute__((unused))) {
 
 ////////// Functions ///////////////////////////////////////////////////
 void sense() {
-  // LED ON
-  digitalWrite(TCS_LED, HIGH);
+  float r, g, b;
+  uint16_t reading_r, reading_g, reading_b, reading_c;
 
-  red = tcs.colorRead('r');   //reads color value for red
-  green = tcs.colorRead('g');   //reads color value for green
-  blue = tcs.colorRead('b');    //reads color value for blue
-  clear = tcs.colorRead('c');    //reads color value for white(clear)
+  reading_r = tcs.colorRead('r');   //reads color value for red
+  reading_g = tcs.colorRead('g');   //reads color value for green
+  reading_b = tcs.colorRead('b');    //reads color value for blue
+  reading_c = tcs.colorRead('c');    //reads color value for white(clear)  
 
-  digitalWrite(TCS_LED, LOW); //LEDs OFF
-
-  //sum = clear;
-  r = red; 
-  g = green; 
-  b = blue;
-  
   // converting from raw frequency to the RGB color space.
-  r /= clear; 
-  g /= clear; 
-  b /= clear;
+  r = (reading_r / reading_c)*256; 
+  g = (reading_g / reading_c)*256; 
+  b = (reading_b / reading_c)*256;
   
-  r *= 256; 
-  g *= 256; 
-  b *= 256;
   //////////////////////////////////////////////////////////////
   
   // Logging ///////////////////////////////////////////////////
@@ -63,7 +60,7 @@ void sense() {
       log(r, 'R');
       log(g, 'G');
       log(b, 'B');
-      log(clear, 'C');
+      log(reading_c, 'C');
     
       Serial.println();
 
@@ -88,3 +85,10 @@ void machine() {
   // This is the color sorting Process
 }
 
+/*
+* This injects an item into the system using the servo motor(s). from the cache by the color sensor.
+*/
+void inject()
+{
+  
+}
