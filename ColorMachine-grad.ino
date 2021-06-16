@@ -11,7 +11,6 @@
 #define debug true
 
 // Menu Init ////////////////////////////////////
-// initialize the library with the numbers of the interface pins
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
 enum AppModeValues
@@ -62,6 +61,9 @@ void setup()
   // Stepper Motor
   StepperInit();
 
+  // SDCard
+  SdCardInit();
+  ////////////////////////////
 
   // Operating System ///////////////////////////////////
   // Create a mutx for serial.
