@@ -1,12 +1,13 @@
 #include <Arduino_FreeRTOS.h>
-#include <semphr.h>  // add the FreeRTOS functions for Semaphores (or Flags).
+#include <semphr.h>
 
 #include <LiquidCrystal.h>
-#include "./menu/LcdKeypad.h"
-#include "./menu/MenuData.h"
+#include "LcdKeypad.h"
+#include "MenuData.h"
 
 #include "colorsensor.h"
 #include "StepperAbstractions.h"
+#include "JsonAbstractions.h"
 
 #define debug true
 

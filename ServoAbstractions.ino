@@ -1,3 +1,5 @@
+// Servo Motor Abstractions. specific to this system's design.
+
 #include <Servo.h>
 #include "ServoAbstractions.h"
 
