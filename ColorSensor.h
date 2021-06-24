@@ -9,15 +9,15 @@
 #define TCS_LED 40
 
 struct RGB {
-float r;
-float g;
-float b;
+  float r;
+  float g;
+  float b;
 };
 
 struct HSL {
-float h;
-float s;
-float l;
+  float h;
+  float s;
+  float l;
 };
 
 // Tasks
@@ -25,4 +25,6 @@ void TaskColorSensor(void *pvParameters __attribute__((unused)));
 
 // Functions
 void Sense();
-void rgb2hsl(RGB *rgb, HSL *hsl);
+struct RGB genRgb(uint16_t *reading_r, uint16_t *reading_g, uint16_t *reading_b, uint16_t *reading_c);
+void rgb2hsl(RGB *rgb);
+String colorClassify(HSL *hsl);

@@ -10,83 +10,50 @@ tcs3200 tcs(TCS_S0, TCS_S1pwm, TCS_S2pwm, TCS_S3, TCS_Sout);
 // Tasks ////////////////////////////////////////////////////////////////
 void TaskColorSensor(void *pvParameters __attribute__((unused))) {
   //Serial.println("Resuming color sensor task");
+  #if DEBUG == true
+    Serial.println("Sensor Process Started");
+  #endif
 
-  if(debug) Serial.println("Sensor Process Started");
   pinMode(TCS_LED, OUTPUT);
 
   for (;;) // A Task shall never return or exit.
   {
-    // Readings with LED ON
-    digitalWrite(TCS_LED, HIGH);
-    vTaskDelay(20);
-    // Take X readings.
-    sense();
+    if ( xSemaphoreTake( xSerialSemaphore, ( TickType_t ) 5 ) == pdTRUE )
+      {
+        // Readings with LED ON
+        digitalWrite(TCS_LED, HIGH);
+        vTaskDelay(40);
+        // Take X readings.
+        sense();
 
-    // Readings with LED ON
-    digitalWrite(TCS_LED, LOW);
-    vTaskDelay(20);
-    // Take X readings.
-    sense();
+        // Readings with LED ON
+        digitalWrite(TCS_LED, LOW);
+        vTaskDelay(40);
+        // Take X readings.
+        sense();
 
+        vTaskDelay(40);
+
+        xSemaphoreGive( xSerialSemaphore ); // Now free or "Give" the Serial Port for others.
+      }
     vTaskSuspend(NULL); //Suspend Own Task
-  }
+  
+  } // Task Loop
+
 } 
 
 
 ////////// Functions ///////////////////////////////////////////////////
 void sense() {
-  //float r, g, b;
-  RGB rgb;
-  HSL hsl;
 
-  uint16_t reading_r, reading_g, reading_b, reading_c;
+  uint16_t reading_r = tcs.colorRead('r');   //reads color value for red
+  uint16_t reading_g = tcs.colorRead('g');   //reads color value for green
+  uint16_t reading_b = tcs.colorRead('b');    //reads color value for blue
+  uint16_t reading_c = tcs.colorRead('c');    //reads color value for white(clear)  
 
-  reading_r = tcs.colorRead('r');   //reads color value for red
-  reading_g = tcs.colorRead('g');   //reads color value for green
-  reading_b = tcs.colorRead('b');    //reads color value for blue
-  reading_c = tcs.colorRead('c');    //reads color value for white(clear)  
-
-  // converting from raw frequency to the RGB color space.
-  rgb.r = (reading_r / reading_c)*256; 
-  rgb.g = (reading_g / reading_c)*256; 
-  rgb.b = (reading_b / reading_c)*256;
-  
-  //////////////////////////////////////////////////////////////
+  RGB rgb = genRgb(&reading_r, &reading_g, &reading_b, &reading_c);
   // Convert to HSL
-  rgb2hsl(&rgb, &hsl);
-  // Logging ///////////////////////////////////////////////////
-  if(debug){
-    
-    // See if we can obtain or "Take" the Serial Semaphore.
-    // If the semaphore is not available, wait 5 ticks of the Scheduler to see if it becomes free.
-    if ( xSemaphoreTake( xSerialSemaphore, ( TickType_t ) 5 ) == pdTRUE )
-    {
-      log(rgb.r, 'R');
-      log(rgb.g, 'G');
-      log(rgb.b, 'B');
-      log(reading_c, 'C');
-    
-      Serial.println();
-
-      log(hsl.h, 'H');
-      log(hsl.s, 'S');
-      log(hsl.l, 'L');
-      
-      Serial.println();
-      // We were able to obtain or "Take" the semaphore and can now access the shared resource.
-      xSemaphoreGive( xSerialSemaphore ); // Now free or "Give" the Serial Port for others.
-    }
-
-  }
-  
-  vTaskDelay(30);
-}
-
-void log(int val, char c) {
-  Serial.print(c);
-  Serial.print(" = ");
-  Serial.print(val);
-  Serial.print("  ");
+  rgb2hsl(&rgb);  
 }
 
 void machine() {
@@ -102,14 +69,36 @@ void inject()
   
 }
 
-// Convert RGB to HSL
-void rgb2hsl(RGB *rgb, HSL *hsl) {
-  // the largest guarnteed value is going to be 1.0.
-  rgb->r /= 255;
-  rgb->g /= 255;
-  rgb->b /= 255;
+struct RGB genRgb(uint16_t *reading_r, uint16_t *reading_g, uint16_t *reading_b, uint16_t *reading_c) {
   
-  float cMax = 0;
+  RGB rgb;
+  // converting from raw frequency to the RGB color space.
+  rgb.r = (*reading_r / *reading_c)*256.0; 
+  rgb.g = (*reading_g / *reading_c)*256.0; 
+  rgb.b = (*reading_b / *reading_c)*256.0;
+  
+  // Debugging ///////////////////////////////////////////////////
+  #if DEBUG == true
+
+  log(&rgb.r, 'R');
+  log(&rgb.g, 'G');
+  log(&rgb.b, 'B');
+  //log(&int(*reading_c), &'C');
+    
+  #endif // debug
+
+  return rgb;
+}
+// Convert RGB to HSL
+void rgb2hsl(RGB *rgb) {
+
+  HSL hsl;
+
+  rgb->r /= 255.0;
+  rgb->g /= 255.0;
+  rgb->b /= 255.0;
+  
+  float cMax = 0.1;
   float cMin = 1.0;
   char max = '0';
 
@@ -132,16 +121,21 @@ void rgb2hsl(RGB *rgb, HSL *hsl) {
     max = 'g';
     cMax = rgb->g;
   }
-  // Luminance
-  hsl->l = (cMax - cMin) / 2;
+
+  float sumMaxMin = cMax + cMin;
+  float subMaxMin = cMax - cMin;
+  
+
+    // Luminance
+  hsl.l = subMaxMin / 2.0;
 
   // Saturation.
   // If Luminance is less or equal to 0.5, then Saturation = (max-min)/(max+min)
   // If Luminance is bigger then 0.5. then Saturation = ( max-min)/(2.0-max-min)
-  if(hsl->l <= 0.5)
-    hsl->s = (cMax - cMin) / (cMax + cMin);
-  else if(hsl->l > 0.5)
-    hsl->s = (cMax - cMin) / (2.0 - cMax - cMin);
+  if(hsl.l <= 0.5)
+    hsl.s = subMaxMin / sumMaxMin;
+  else if(hsl.l > 0.5)
+    hsl.s = subMaxMin / (2.0 - subMaxMin);
 
   // Hue
   // If Red is max, then Hue = (G-B)/(max-min)
@@ -150,28 +144,50 @@ void rgb2hsl(RGB *rgb, HSL *hsl) {
   switch(max)
   {
     case 'r':
-      hsl->h = (rgb->g - rgb->b) / (cMax - cMin);
+      hsl.h = (rgb->g - rgb->b) / subMaxMin;
       break;
     case 'g':
-      hsl->h = 2.0 + (rgb->b - rgb->r) / (cMax - cMin);
+      hsl.h = 2.0 + (rgb->b - rgb->r) / subMaxMin;
       break;
     case 'b':
-      hsl->h = 4.0 + (rgb->r - rgb->g) / (cMax - cMin);
+      hsl.h = 4.0 + (rgb->r - rgb->g) / subMaxMin;
       break;
   }
-  hsl->h *= 60;
+
+  hsl.h *= 60.0;
+ 
+
+  // Debugging ///////////////////////////////////////////////////
+  #if DEBUG == true
+    
+    Serial.println(colorClassify(&hsl));
+
+  #endif // debug
 }
 
 String colorClassify(HSL *hsl) {
-    if (hsl->l < 0.2)  return "Black";
-    if (hsl->l > 0.8)  return "White";
 
-    if (hsl->s < 0.25) return "Gray";
-    else if (hsl->h < 30.0)   return "Red";
-    else if (hsl->h < 90.0)   return "Yellow";
-    else if (hsl->h < 150.0)  return "Green";
-    else if (hsl->h < 210.0)  return "Cyan";
-    else if (hsl->h < 270.0)  return "Blue";
-    else if (hsl->h < 330.0)  return "Magenta";
-    return "error";
+  if (hsl->l < 0.2)  return "black";
+  else if (hsl->l > 0.8)  return "white";
+
+  if (hsl->s < 0.25) return "gray";
+
+  if (hsl->h < 20.0)   return "red";
+  else if (hsl->h > 20.0 && hsl->h < 40.0)  return "orange";
+  else if (hsl->h > 50.0 && hsl->h < 60.0)  return "yellow";
+  else if (hsl->h > 80.0 && hsl->h < 150.0)  return "green";
+  else if (hsl->h > 170.0 && hsl->h < 190.0)  return "Orange";
+  else if (hsl->h < 270.0)  return "Blue";
+  else if (hsl->h < 330.0)  return "Magenta";
+
+  return "error";
 }
+
+#if DEBUG == true
+void log(float *val, char c) {
+  Serial.print(c);
+  Serial.print(" = ");
+  Serial.print(*val);
+  Serial.print("  ");
+}
+#endif
