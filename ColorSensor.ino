@@ -18,26 +18,23 @@ void TaskColorSensor(void *pvParameters __attribute__((unused))) {
 
   for (;;) // A Task shall never return or exit.
   {
-    if ( xSemaphoreTake( xSerialSemaphore, ( TickType_t ) 5 ) == pdTRUE )
-      {
-        // Readings with LED ON
-        digitalWrite(TCS_LED, HIGH);
-        vTaskDelay(40);
-        // Take X readings.
-        sense();
 
-        // Readings with LED ON
-        digitalWrite(TCS_LED, LOW);
-        vTaskDelay(40);
-        // Take X readings.
-        sense();
+    // Readings with LED ON
+    digitalWrite(TCS_LED, HIGH);
+    vTaskDelay(40);
+    // Take X readings.
+    sense();
 
-        vTaskDelay(40);
+    // Readings with LED ON
+    digitalWrite(TCS_LED, LOW);
+    vTaskDelay(40);
+    // Take X readings.
+    sense();
 
-        xSemaphoreGive( xSerialSemaphore ); // Now free or "Give" the Serial Port for others.
-      }
+    vTaskDelay(40);
+
+
     vTaskSuspend(NULL); //Suspend Own Task
-  
   } // Task Loop
 
 } 
@@ -51,9 +48,36 @@ void sense() {
   uint16_t reading_b = tcs.colorRead('b');    //reads color value for blue
   uint16_t reading_c = tcs.colorRead('c');    //reads color value for white(clear)  
 
-  RGB rgb = genRgb(&reading_r, &reading_g, &reading_b, &reading_c);
-  // Convert to HSL
-  rgb2hsl(&rgb);  
+  RGB rgb;
+  // converting from raw frequency to the RGB color space.
+  rgb.r = (reading_r);
+  rgb.g = (reading_g);
+  rgb.b = (reading_b);
+  
+  rgb.r /= reading_c;
+  rgb.g /= reading_c;
+  rgb.b /= reading_c;
+
+  rgb.r *= 256;
+  rgb.g *= 256;
+  rgb.b *= 256;
+
+  //rgb2hsl(&rgb);  
+
+    // Debugging ///////////////////////////////////////////////////
+  #if DEBUG == true
+  if (xSemaphoreTake(xSerialSemaphore, 10) == pdTRUE)
+  {
+    log(&rgb.r, 'R');
+    log(&rgb.g, 'G');
+    log(&rgb.b, 'B');
+    //log(&reading_c, 'C');
+    Serial.println();
+
+    xSemaphoreGive(xSerialSemaphore);
+  }
+  #endif // debug
+
 }
 
 void machine() {
@@ -69,26 +93,6 @@ void inject()
   
 }
 
-struct RGB genRgb(uint16_t *reading_r, uint16_t *reading_g, uint16_t *reading_b, uint16_t *reading_c) {
-  
-  RGB rgb;
-  // converting from raw frequency to the RGB color space.
-  rgb.r = (*reading_r / *reading_c)*256.0; 
-  rgb.g = (*reading_g / *reading_c)*256.0; 
-  rgb.b = (*reading_b / *reading_c)*256.0;
-  
-  // Debugging ///////////////////////////////////////////////////
-  #if DEBUG == true
-
-  log(&rgb.r, 'R');
-  log(&rgb.g, 'G');
-  log(&rgb.b, 'B');
-  //log(&int(*reading_c), &'C');
-    
-  #endif // debug
-
-  return rgb;
-}
 // Convert RGB to HSL
 void rgb2hsl(RGB *rgb) {
 
@@ -156,13 +160,9 @@ void rgb2hsl(RGB *rgb) {
 
   hsl.h *= 60.0;
  
+  hsl.color = colorClassify(&hsl);
+  Serial.println(hsl.color);
 
-  // Debugging ///////////////////////////////////////////////////
-  #if DEBUG == true
-    
-    Serial.println(colorClassify(&hsl));
-
-  #endif // debug
 }
 
 String colorClassify(HSL *hsl) {
@@ -178,16 +178,18 @@ String colorClassify(HSL *hsl) {
   else if (hsl->h > 80.0 && hsl->h < 150.0)  return "green";
   else if (hsl->h > 170.0 && hsl->h < 190.0)  return "Orange";
   else if (hsl->h < 270.0)  return "Blue";
-  else if (hsl->h < 330.0)  return "Magenta";
+  else if (hsl->h < 330.0)  return "pruple";
 
   return "error";
 }
 
 #if DEBUG == true
 void log(float *val, char c) {
-  Serial.print(c);
-  Serial.print(" = ");
-  Serial.print(*val);
-  Serial.print("  ");
+
+    Serial.print(c);
+    Serial.print(": ");
+    Serial.print(*val);
+    Serial.print("  ");
+
 }
 #endif

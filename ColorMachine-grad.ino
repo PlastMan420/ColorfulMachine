@@ -9,7 +9,7 @@
 #include "StepperAbstractions.h"
 #include "JsonAbstractions.h"
 
-#define debug true
+#define DEBUG true
 
 // Menu Init ////////////////////////////////////
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
@@ -43,6 +43,14 @@ void setup()
 {
   Serial.begin(115200);
 
+  // Create a mutx for serial. Created as a global object in the main file since it's a shared resource.
+  if ( xSerialSemaphore == NULL )  // Check to confirm that the Serial Semaphore has not already been created.
+  {
+    xSerialSemaphore = xSemaphoreCreateMutex();  // Create a mutex semaphore we will use to manage the Serial Port
+    if ( ( xSerialSemaphore ) != NULL )
+      xSemaphoreGive( ( xSerialSemaphore ) );  // Make the Serial Port available for use, by "Giving" the Semaphore.
+  }
+  
   // Menu Setup /////////////////////////////////////////
   backLightOn();
   // set up the LCD's number of columns and rows:
@@ -62,18 +70,9 @@ void setup()
   // Stepper Motor
   StepperInit();
 
-  // SDCard
-  SdCardInit();
   ////////////////////////////
 
   // Operating System ///////////////////////////////////
-  // Create a mutx for serial.
-  if ( xSerialSemaphore == NULL )  // Check to confirm that the Serial Semaphore has not already been created.
-  {
-    xSerialSemaphore = xSemaphoreCreateMutex();  // Create a mutex semaphore we will use to manage the Serial Port
-    if ( ( xSerialSemaphore ) != NULL )
-      xSemaphoreGive( ( xSerialSemaphore ) );  // Make the Serial Port available for use, by "Giving" the Semaphore.
-  }
 
   ////////////// TASKS ////////////////
   // LCD Menu Task
