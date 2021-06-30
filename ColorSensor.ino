@@ -3,21 +3,15 @@
 #include "StepperAbstractions.h"
 #include "ServoAbstractions.h"
 #include "ColorSensor.h"
-//#include "helpers.h"
 
 // Init
 // (S0, S1, S2, S3, output pin)  //
 tcs3200 tcs(TCS_S0, TCS_S1pwm, TCS_S2pwm, TCS_S3, TCS_Sout);
-
+    
 // Tasks ////////////////////////////////////////////////////////////////
 void TaskColorSensor(void *pvParameters __attribute__((unused))) {
-//Serial.println("Resuming color sensor task");
-#if DEBUG == true
-  Serial.println("Sensor Process Started");
-#endif
 
-  pinMode(TCS_LED, OUTPUT);
-
+  
   for (;;)  // A Task shall never return or exit.
   {
 
@@ -33,8 +27,6 @@ void TaskColorSensor(void *pvParameters __attribute__((unused))) {
     // Take X readings.
     sense();
 
-    vTaskDelay(40);
-
 
     vTaskSuspend(NULL);  //Suspend Own Task
   }                      // Task Loop
@@ -44,28 +36,40 @@ void TaskColorSensor(void *pvParameters __attribute__((unused))) {
 ////////// Functions ///////////////////////////////////////////////////
 void sense() {
  
-   RGB rgb;
+  RGB rgb;
+  uint32_t sum = 0;
+
    // sub-scope to free memory later
   {
-    uint16_t reading_r = tcs.colorRead('r');  //reads color value for red
-    uint16_t reading_g = tcs.colorRead('g');  //reads color value for green
-    uint16_t reading_b = tcs.colorRead('b');  //reads color value for blue
-    uint16_t reading_c = tcs.colorRead('c');  //reads color value for white(clear)
+    uint16_t reading_r = tcs.colorRead('r', 20);  //reads color value for red
+    uint16_t reading_g = tcs.colorRead('g', 20);  //reads color value for green
+    uint16_t reading_b = tcs.colorRead('b', 20);  //reads color value for blue
+    uint16_t reading_c = tcs.colorRead('c', 20);  //reads color value for white(clear)
+    sum = reading_c;
 
     // converting from raw frequency to the RGB color space.
-    rgb.r = reading_r;
-    rgb.g = reading_g;
-    rgb.b = reading_b;
-
-    rgb.r /= reading_c;
-    rgb.g /= reading_c;
-    rgb.b /= reading_c;
+    rgb.r = (float)reading_r / (float)sum;
+    rgb.g = (float)reading_g / (float)sum;
+    rgb.b = (float)reading_b / (float)sum;
   }
-  rgb.r *= 256.0;
-  rgb.g *= 256.0;
-  rgb.b *= 256.0;
+  
+    // Debugging ///////////////////////////////////////////////////
+  #if DEBUG == true && sensorDebug == true
+    rgb.r *= 256.0;
+    rgb.g *= 256.0;
+    rgb.b *= 256.0;
 
-  String color = rgb2hsv(&rgb);
+    if (xSemaphoreTake(xSerialSemaphore, 10) == pdTRUE) {
+        Serial.println(rgb.r);
+        Serial.println(rgb.g);
+        Serial.println(rgb.b);
+
+      xSemaphoreGive(xSerialSemaphore);
+    }
+  #endif  // debug
+
+  long color = rgb2hsv(&rgb);
+
 }
 
 void machine() {
@@ -80,133 +84,124 @@ void inject() {
 }
 
 // Convert RGB to HSL
-String rgb2hsv(RGB *rgb) {
+long rgb2hsv(RGB *rgb) {
 
-  rgb->r /= 255.0;
-  rgb->g /= 255.0;
-  rgb->b /= 255.0;
+  int r = rgb->r * 100;
+  int g = rgb->g * 100;
+  int b = rgb->b * 100;
+  
 
-  byte r = byte(rgb->r * 100.0);
-  byte g = byte(rgb->g * 100.0);
-  byte b = byte(rgb->b * 100.0);
 
-  // float cMax = 0.1;
-  // float cMin = 1.0;
+  int cmax = 1;
+  int cmin = 100;
 
-  byte cMax = 100; 
-  byte cMin = 1;
+  cmin = min(cmin, r);
+  cmin = min(cmin, g);
+  cmin = min(cmin, b);
 
-  char max = '0';
+  cmax = max(cmax, r);
+  cmax = max(cmax, g);
+  cmax = max(cmax, b);
 
-  cMin = min(cMin, r);
-  cMin = min(cMin, g);
-  cMin = min(cMin, b);
+  // delta will range from 1 to 100.
+  int delta = cmax - cmin;
 
-  if (r > b && r > g) {
-    max = 'r';
-    cMax = r;
-  } else if (b > r && b > g) {
-    max = 'b';
-    cMax = b;
-  } else if (g > b && g > r) {
-    max = 'g';
-    cMax = g;
-  }
-
-  byte delta = cMax - cMin;
-
-  HSL hsl;
+  HSV hsv;
 
   // Value
-  hsl.v = cMax;
+  hsv.v = cmax;
 
   // Saturation
-  if (cMax == 0 || cMax == 1)
-    hsl.s = 0;
+  if (cmax < 2)
+    hsv.s = 0;
   else
-    hsl.s = (delta / cMax) * 100;
+    hsv.s = (delta / cmax)*100;
 
   // Hue
-  // If Red is max, then Hue = (G-B)/(max-min)
+  // If Red is max, then Hue = (G-B)/(max-min) % 6
   // If Green is max, then Hue = 2.0 + (B-R)/(max-min)
   // If Blue is max, then Hue = 4.0 + (R-G)/(max-min)
   if (delta == 0)
-    hsl.h = 0;
+    hsv.h = 0;
   else {
-    switch (max) {
-      case 'r':
-        hsl.h = fmod(((g - b) / delta), 6.0);
-        break;
-      case 'g':
-        hsl.h = 2 + ((b - r) / delta);
-        break;
-      case 'b':
-        hsl.h = 4 + ((r - g) / delta);
-        break;
-    }
+
+    if (cmax == r)
+        hsv.h = fmod((60 * ((g - b) / delta) + 360), 360);
+
+    // if cmax equal g then compute h
+    else if (cmax == g)
+        hsv.h = fmod((60 * ((b - r) / delta) + 120), 360);
+
+    // if cmax equal b then compute h
+    else if (cmax == b)
+        hsv.h = fmod((60 * ((r - g) / delta) + 240), 360);
   }
 
-  hsl.h *= 60;
 
-  if ((g - b) < 0)
-    hsl.h += 360;
-
-  String color = colorClassify(&hsl);
-
-  // Debugging ///////////////////////////////////////////////////
-  #if DEBUG == true
+    // Debugging ///////////////////////////////////////////////////
+  #if DEBUG == true && rgb2hsvDebug == true
     if (xSemaphoreTake(xSerialSemaphore, 10) == pdTRUE) {
-        Serial.println(color);
+        Serial.println(hsv.h);
+        Serial.println(hsv.s);
+        Serial.println(hsv.v);
+        Serial.println();
       xSemaphoreGive(xSerialSemaphore);
     }
   #endif  // debug
 
-  return color;
+  return colorClassify(&hsv);
 }
 
-String colorClassify(HSL *hsl) {
+long colorClassify(HSV *hsv) {
 
-  // if(hsl->h < 5)
-  // if (hsl->v < 20.0) return "black";
-  // else if (hsl->v > 80)
-  //   return "white";
-  // else
-  //   return "gray";
   enum Color _color;
   enum Degree _degree;
+  enum ColorList _cList;
 
-  if(hsl->s < 25)
+  if(hsv->s < 25)
     _color = monochrome;
   else
     _color = color;
 
-  if(hsl->v < 30)
+  if(hsv->v < 30)
     _degree = dark;
 
-  else if (hsl->v > 75)
+  else if (hsv->v > 75)
     _degree = bright;
 
   if (_color == monochrome) 
   {
-    if (_degree == bright) return "white";
-    else if (_degree == dark) return "black";
-    else if(_degree == dim) return "gray";
+    switch(_degree) {
+      case bright: 
+        _cList = white;
+      break;
+      case dark: 
+        _cList = black;
+      break;
+      case dim:
+        _cList = gray;
+      break;
+    }
+
   }
+
   else {
 
-    if (hsl->h >= 0 && hsl->h < 40.0)
-      return "orange";
-    else if (hsl->h > 50.0 && hsl->h < 60.0)
-      return "yellow";
-    else if (hsl->h > 80.0 && hsl->h < 150.0)
-      return "green";
-    else if (hsl->h < 270.0)
-      return "Blue";
-    else if (hsl->h < 330.0)
-      return "pruple";
+    if (hsv->h >= 0 && hsv->h < 40 || hsv->h >= 310 && hsv->h <= 360)
+    {
+      _cList = red;
+    }
+    else if (hsv->h >= 45 && hsv->h < 55)
+      _cList = yellow;
+    else if (hsv->h >= 55 && hsv->h < 150)
+      _cList = green;
+    else if (hsv->h >= 150 && hsv->h < 270)
+      _cList = blue;
+    else if (hsv->h >+ 270 && hsv->h < 310)
+      _cList = purple;
 
   }
 
 
-  return "error";
+  return _cList;
 }

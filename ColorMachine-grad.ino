@@ -66,11 +66,9 @@ void setup()
   // Color sensor //
   pinMode(TCS_LED, OUTPUT);
   digitalWrite(TCS_LED, LOW); //LEDs OFF
-  ///////////////////////////////////////
   // Stepper Motor
   StepperInit();
 
-  ////////////////////////////
 
   // Operating System ///////////////////////////////////
 
@@ -195,7 +193,7 @@ byte processMenuCommand(byte cmdId)
         vTaskResume(sensorTaskHandle);
         break;
       default:
-        Serial.println("Nothing");
+        Serial.println(F("Nothing"));
     break;
   }
 

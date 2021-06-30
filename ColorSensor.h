@@ -1,5 +1,8 @@
 #pragma once
 
+#define sensorDebug false
+#define rgb2hsvDebug true
+
 // Pin Def
 const PROGMEM byte TCS_LED = 40;
 const PROGMEM byte TCS_S0 = 42;
@@ -38,10 +41,10 @@ struct RGB {
   float b;
 };
 
-struct HSL {
-  int h;
-  byte s;
-  byte v;
+struct HSV {
+  float h;
+  int s;
+  int v;
 };
 
 // Tasks
@@ -49,6 +52,5 @@ void TaskColorSensor(void *pvParameters __attribute__((unused)));
 
 // Functions
 void Sense();
-struct RGB genRgb(uint16_t *reading_r, uint16_t *reading_g, uint16_t *reading_b, uint16_t *reading_c);
-String rgb2hsv(RGB *rgb);
-String colorClassify(HSL *hsl);
+long rgb2hsv(RGB *rgb);
+long colorClassify(HSV *hsv);
