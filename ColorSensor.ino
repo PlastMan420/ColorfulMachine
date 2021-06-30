@@ -126,15 +126,15 @@ long rgb2hsv(RGB *rgb) {
   else {
 
     if (cmax == r)
-        hsv.h = fmod((60 * ((g - b) / delta) + 360), 360);
+        hsv.h = (60 * ((g - b) / delta) + 360) % 360;
 
     // if cmax equal g then compute h
     else if (cmax == g)
-        hsv.h = fmod((60 * ((b - r) / delta) + 120), 360);
+        hsv.h = (60 * ((b - r) / delta) + 120) % 360;
 
     // if cmax equal b then compute h
     else if (cmax == b)
-        hsv.h = fmod((60 * ((r - g) / delta) + 240), 360);
+        hsv.h = (60 * ((r - g) / delta) + 240) % 360;
   }
 
 

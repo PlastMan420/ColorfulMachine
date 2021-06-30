@@ -42,7 +42,7 @@ struct RGB {
 };
 
 struct HSV {
-  float h;
+  int h;
   int s;
   int v;
 };
