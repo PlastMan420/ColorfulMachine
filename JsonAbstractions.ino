@@ -1,13 +1,18 @@
 #include <SPI.h>
 #include <SD.h>
 #include <ArduinoJson.h>
+#include <StreamUtils.h>
 #include "JsonAbstractions.h"
 
 //const char *filename = "/config.txt";
 
+const PROGMEM byte TABLE_ADDRESS = 0;
+const PROGMEM byte TABLE_SIZE = 150;
+const PROGMEM byte STATIC_JSON_SIZE = 32;
+
 void SdCardInit() {
   #if DEBUG == true
-    Serial.print("Initializing SD card...");
+    Serial.print(F("Initializing SD card..."));
   #endif
   SD.begin(CS);
 
@@ -17,28 +22,43 @@ void ReadConfig() {
   
 }
 
-void UpdateConfig(struct Config *config, const char *filename) {
+#if USE_EEPROM == true
+
+void UpdateConfigEeprom(struct Config *p_config) {
   // drop parameter translates into accelestepper "location".
   // color is a HEX representation of RGB.
-  const byte staticJsonSize = 32;
 
-  File file = SD.open(filename);
+  StaticJsonDocument<STATIC_JSON_SIZE> conf;
 
-  StaticJsonDocument<staticJsonSize> conf;
-  // Deserialize the JSON document
-  DeserializationError error = deserializeJson(conf, file);
-  if (error)
-    {
-      Serial.println(F("Failed to read file."));
-      return;
-    }
+  EepromStream eepromStream(address, size);
+  deserializeJson(conf, eepromStream);
 
-  conf[config->drop] = config->color;
+  conf[p_config->drop] = p_config->color;
+
+  serializeJson(*p_conf, eepromStream);
+
+}
+
+#else
+
+void UpdateConfig(struct Config *p_config, const char *p_filename) {
+  // drop parameter translates into accelestepper "location".
+  // color is a HEX representation of RGB.
+
+  StaticJsonDocument<STATIC_JSON_SIZE> conf;
+
+  File file = SD.open(p_filename);
+  deserializeJson(conf, file);
+
+  conf[p_config->drop] = p_config->color;
 
   serializeJson(conf, file);
 
   file.close();
+
 }
+
+#endif
 
 void UpdateLog() {
   
