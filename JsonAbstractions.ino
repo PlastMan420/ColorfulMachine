@@ -24,24 +24,24 @@ void ReadConfig() {
 
 #if USE_EEPROM == true
 
-void UpdateConfigEeprom(struct Config *p_config) {
+void UpdateConfigEeprom(Config *p_config) {
   // drop parameter translates into accelestepper "location".
   // color is a HEX representation of RGB.
 
   StaticJsonDocument<STATIC_JSON_SIZE> conf;
 
-  EepromStream eepromStream(address, size);
+  EepromStream eepromStream(TABLE_ADDRESS, TABLE_SIZE);
   deserializeJson(conf, eepromStream);
 
   conf[p_config->drop] = p_config->color;
 
-  serializeJson(*p_conf, eepromStream);
+  serializeJson(conf, eepromStream);
 
 }
 
 #else
 
-void UpdateConfig(struct Config *p_config, const char *p_filename) {
+void UpdateConfig(Config p_config, const char *p_filename) {
   // drop parameter translates into accelestepper "location".
   // color is a HEX representation of RGB.
 

@@ -15,7 +15,7 @@ struct Config {
 void SdCardInit();
 
 #if USE_EEPROM == true
-void UpdateConfigEeprom(struct Config *p_config);
+void UpdateConfigEeprom(Config *p_config);
 #else
-void UpdateConfig(struct Config *p_config, const char *p_filename);
+void UpdateConfig(Config *p_config, const char *p_filename);
 #endif
