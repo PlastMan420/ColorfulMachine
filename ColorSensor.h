@@ -52,5 +52,5 @@ void TaskColorSensor(void *pvParameters __attribute__((unused)));
 
 // Functions
 void Sense();
-long rgb2hsv(RGB *rgb);
-long colorClassify(HSV *hsv);
+HSV rgb2hsv(RGB *rgb);
+long colorClassify(RGB *rgb);
