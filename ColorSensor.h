@@ -1,7 +1,8 @@
 #pragma once
 
 #define sensorDebug false
-#define rgb2hsvDebug true
+#define rgb2hsvDebug false
+#define colorDeterminationDebug true
 
 // Pin Def
 const PROGMEM byte TCS_LED = 40;
@@ -14,13 +15,13 @@ const PROGMEM byte TCS_Sout = 50;
 enum ColorList {
   black = 0,
   white = 1,
-  gray = 128128128,
-  red = 255000000,
-  green = 000255000,
-  blue = 000000255,
-  orange = 255165000,
-  yellow = 255255000,
-  purple = 255000255,
+  gray = 2,
+  red = 3,
+  green = 4,
+  blue = 5,
+  orange = 6,
+  yellow = 7,
+  purple = 8,
 
 };
 

@@ -91,6 +91,8 @@ long colorClassify(RGB *rgb) {
 
   else if (hsv.v > 75)
     _degree = bright;
+  else
+    _degree = dim;
 
   if (_color == monochrome) 
   {
@@ -125,6 +127,13 @@ long colorClassify(RGB *rgb) {
 
   }
 
+  #if DEBUG == true && colorDeterminationDebug == true
+    if(xSemaphoreTake(xSerialSemaphore, 10) == pdTRUE) {
+        Serial.println(_cList);
+        Serial.println();
+        xSemaphoreGive(xSerialSemaphore);
+    }
+  #endif  // debug
 
   return _cList;
 }
@@ -189,7 +198,7 @@ HSV rgb2hsv(RGB *rgb) {
         Serial.println(hsv.s);
         Serial.println(hsv.v);
         Serial.println();
-      xSemaphoreGive(xSerialSemaphore);
+        xSemaphoreGive(xSerialSemaphore);
     }
   #endif  // debug
 
