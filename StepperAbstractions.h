@@ -7,5 +7,5 @@ const PROGMEM byte STEPPER_IN3 = 26;
 const PROGMEM byte STEPPER_IN4 = 28;
 
 void StepperInit();
-void GoToPlace();
+void GoToPlace(int hops);
 
