@@ -24,7 +24,7 @@ void ReadConfig() {
 
 #if USE_EEPROM == true
 
-void UpdateConfigEeprom(Config *p_config) {
+void UpdateConfigJsonEeprom(Config *p_config) {
   // drop parameter translates into accelestepper "location".
   // color is a HEX representation of RGB.
 
@@ -41,7 +41,7 @@ void UpdateConfigEeprom(Config *p_config) {
 
 #else
 
-void UpdateConfig(Config p_config, const char *p_filename) {
+void UpdateConfigJson(Config p_config, const char *p_filename) {
   // drop parameter translates into accelestepper "location".
   // color is a HEX representation of RGB.
 
