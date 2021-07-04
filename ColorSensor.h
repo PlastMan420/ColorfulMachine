@@ -55,3 +55,4 @@ void TaskColorSensor(void *pvParameters __attribute__((unused)));
 void Sense();
 HSV rgb2hsv(RGB *rgb);
 long colorClassify(RGB *rgb);
+void Output(byte colorIdx);

@@ -1,5 +1,6 @@
 #include <tcs3200.h>
 #include <Arduino_FreeRTOS.h>
+#include <EEPROM.h>
 #include "StepperAbstractions.h"
 #include "ServoAbstractions.h"
 #include "ColorSensor.h"
@@ -25,8 +26,9 @@ void TaskColorSensor(void *pvParameters __attribute__((unused))) {
     digitalWrite(TCS_LED, LOW);
     vTaskDelay(40);
     // Take X readings.
-    sense();
-
+    byte color = sense();
+    
+    Output(color);
 
     vTaskSuspend(NULL);  //Suspend Own Task
   }                      // Task Loop
@@ -34,7 +36,7 @@ void TaskColorSensor(void *pvParameters __attribute__((unused))) {
 
 
 ////////// Functions ///////////////////////////////////////////////////
-void sense() {
+byte sense() {
  
   RGB rgb;
   uint32_t sum = 0;
@@ -68,9 +70,8 @@ void sense() {
     }
   #endif  // debug
 
-  long color = colorClassify(&rgb);
-  //long color = rgb2hsv(&rgb);
-
+  return colorClassify(&rgb);
+  
 }
 
 long colorClassify(RGB *rgb) {
@@ -205,10 +206,21 @@ HSV rgb2hsv(RGB *rgb) {
   return hsv;
 }
 
-void SortingMachine() {
-  // TODO
-  // This is the color sorting Process
+void Output(byte colorIdx) {
+  // colorIdx is from 0 to 8
+  // drop will be from 1 to 5. 0 if ejection.
+  int drop = EEPROM.read(colorIdx);
+
+  if(drop == 0) {
+    PushItem(true);
+    return;
+  }
+
+  GoToPlace(drop);
+  PushItem();
 }
+
+
 
 /*
 * This injects an item into the system using the servo motor(s). from the cache by the color sensor.
