@@ -1,5 +1,6 @@
 #include <Arduino_FreeRTOS.h>
 #include <semphr.h>
+#include <EEPROM.h>
 
 #include <LiquidCrystal.h>
 #include "LcdKeypad.h"
@@ -8,6 +9,7 @@
 #include "colorsensor.h"
 #include "StepperAbstractions.h"
 #include "JsonAbstractions.h"
+#include "UserSettings.h"
 
 #define DEBUG true
 
@@ -23,7 +25,7 @@ enum AppModeValues
 
 byte appMode = APP_NORMAL_MODE;
 
-MenuManager Menu1(sampleMenu_Root, menuCount(sampleMenu_Root));
+MenuManager Menu1(colorsensorMenu_Root, menuCount(colorsensorMenu_Root));
 
 char strbuf[LCD_COLS + 1]; // one line of lcd display
 byte btn;
@@ -189,9 +191,192 @@ byte processMenuCommand(byte cmdId)
   switch (cmdId)
   {
     // TODO Process menu commands here:
+    // Start Color Sorting
       case mnuCmdColorSensor:
         vTaskResume(sensorTaskHandle);
         break;
+
+    // Modify Lookup Table. too lazy to look for a better solution. leaving as a TODO
+      case mnuCmddrops01:   
+        EEPROM.write(0, 1);
+        break;
+
+      case mnuCmddrops02:   
+        EEPROM.write(0, 2);
+        break;
+
+      case mnuCmddrops03:   
+        EEPROM.write(0, 3);
+        break;
+
+      case mnuCmddrops04:   
+        EEPROM.write(0, 4);
+        break;
+
+      case mnuCmddrops05:   
+        EEPROM.write(0, 5);
+        break;
+////////////////////////////////////
+      case mnuCmddrops11:   
+        EEPROM.write(1, 1);
+        break;
+
+      case mnuCmddrops12:   
+        EEPROM.write(1, 2);
+        break;
+
+      case mnuCmddrops13:   
+        EEPROM.write(1, 3);
+        break;
+
+      case mnuCmddrops14:   
+        EEPROM.write(1, 4);
+        break;
+
+      case mnuCmddrops15:   
+        EEPROM.write(1, 5);
+        break;
+///////////////////////////////////////
+      case mnuCmddrops21:   
+        EEPROM.write(2, 1);
+        break;
+
+      case mnuCmddrops22:   
+        EEPROM.write(2, 2);
+        break;
+
+      case mnuCmddrops23:   
+        EEPROM.write(2, 3);
+        break;
+
+      case mnuCmddrops24:   
+        EEPROM.write(2, 4);
+        break;
+
+      case mnuCmddrops25:   
+        EEPROM.write(2, 5);
+        break;
+//////////////////////////////////////////////////
+      case mnuCmddrops31:   
+        EEPROM.write(3, 1);
+        break;
+
+      case mnuCmddrops32:   
+        EEPROM.write(3, 2);
+        break;
+
+      case mnuCmddrops33:   
+        EEPROM.write(3, 3);
+        break;
+
+      case mnuCmddrops34:   
+        EEPROM.write(3, 4);
+        break;
+
+      case mnuCmddrops35:   
+        EEPROM.write(3, 5);
+        break;
+///////////////////////////////////
+      case mnuCmddrops41:   
+        EEPROM.write(4, 1);
+        break;
+
+      case mnuCmddrops42:   
+        EEPROM.write(4, 2);
+        break;
+
+      case mnuCmddrops43:   
+        EEPROM.write(4, 3);
+        break;
+
+      case mnuCmddrops44:   
+        EEPROM.write(4, 4);
+        break;
+
+      case mnuCmddrops45:   
+        EEPROM.write(4, 5);
+        break;
+//////////////////////////////////////////////
+      case mnuCmddrops51:   
+        EEPROM.write(5, 1);
+        break;
+
+      case mnuCmddrops52:   
+        EEPROM.write(5, 2);
+        break;
+
+      case mnuCmddrops53:   
+        EEPROM.write(5, 3);
+        break;
+
+      case mnuCmddrops54:   
+        EEPROM.write(5, 4);
+        break;
+
+      case mnuCmddrops55:   
+        EEPROM.write(5, 5);
+        break;
+  //////////////////////////////////
+      case mnuCmddrops61:   
+        EEPROM.write(6, 1);
+        break;
+
+      case mnuCmddrops62:   
+        EEPROM.write(6, 2);
+        break;
+
+      case mnuCmddrops63:   
+        EEPROM.write(6, 3);
+        break;
+
+      case mnuCmddrops64:   
+        EEPROM.write(6, 4);
+        break;
+
+      case mnuCmddrops65:   
+        EEPROM.write(6, 5);
+        break;
+//////////////////////////////////////
+      case mnuCmddrops71:   
+        EEPROM.write(7, 1);
+        break;
+
+      case mnuCmddrops72:   
+        EEPROM.write(7, 2);
+        break;
+
+      case mnuCmddrops73:   
+        EEPROM.write(7, 3);
+        break;
+
+      case mnuCmddrops74:   
+        EEPROM.write(7, 4);
+        break;
+
+      case mnuCmddrops75:   
+        EEPROM.write(7, 5);
+        break;
+////////////////////////////////////////
+      case mnuCmddrops81:   
+        EEPROM.write(8, 1);
+        break;
+
+      case mnuCmddrops82:   
+        EEPROM.write(8, 2);
+        break;
+
+      case mnuCmddrops83:   
+        EEPROM.write(8, 3);
+        break;
+
+      case mnuCmddrops84:   
+        EEPROM.write(8, 4);
+        break;
+
+      case mnuCmddrops85:   
+        EEPROM.write(8, 5);
+        break;
+
       default:
         Serial.println(F("Nothing"));
     break;
