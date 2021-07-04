@@ -197,6 +197,10 @@ byte processMenuCommand(byte cmdId)
         break;
 
     // Modify Lookup Table. too lazy to look for a better solution. leaving as a TODO
+      case mnuCmddrops00:   
+        EEPROM.write(0, 0);
+        break;
+
       case mnuCmddrops01:   
         EEPROM.write(0, 1);
         break;
@@ -217,6 +221,10 @@ byte processMenuCommand(byte cmdId)
         EEPROM.write(0, 5);
         break;
 ////////////////////////////////////
+      case mnuCmddrops10:   
+        EEPROM.write(1, 0);
+        break;
+
       case mnuCmddrops11:   
         EEPROM.write(1, 1);
         break;
@@ -237,6 +245,10 @@ byte processMenuCommand(byte cmdId)
         EEPROM.write(1, 5);
         break;
 ///////////////////////////////////////
+      case mnuCmddrops20:   
+        EEPROM.write(2, 0);
+        break;
+
       case mnuCmddrops21:   
         EEPROM.write(2, 1);
         break;
@@ -257,6 +269,10 @@ byte processMenuCommand(byte cmdId)
         EEPROM.write(2, 5);
         break;
 //////////////////////////////////////////////////
+      case mnuCmddrops30:   
+        EEPROM.write(3, 0);
+        break;
+
       case mnuCmddrops31:   
         EEPROM.write(3, 1);
         break;
@@ -277,6 +293,10 @@ byte processMenuCommand(byte cmdId)
         EEPROM.write(3, 5);
         break;
 ///////////////////////////////////
+      case mnuCmddrops40:   
+        EEPROM.write(4, 0);
+        break;
+
       case mnuCmddrops41:   
         EEPROM.write(4, 1);
         break;
@@ -297,6 +317,10 @@ byte processMenuCommand(byte cmdId)
         EEPROM.write(4, 5);
         break;
 //////////////////////////////////////////////
+      case mnuCmddrops50:
+        EEPROM.write(5, 0);
+        break;
+
       case mnuCmddrops51:   
         EEPROM.write(5, 1);
         break;
@@ -317,6 +341,10 @@ byte processMenuCommand(byte cmdId)
         EEPROM.write(5, 5);
         break;
   //////////////////////////////////
+      case mnuCmddrops60:   
+        EEPROM.write(6, 1);
+        break;
+
       case mnuCmddrops61:   
         EEPROM.write(6, 1);
         break;
@@ -337,6 +365,10 @@ byte processMenuCommand(byte cmdId)
         EEPROM.write(6, 5);
         break;
 //////////////////////////////////////
+      case mnuCmddrops70:   
+        EEPROM.write(7, 0);
+        break;
+
       case mnuCmddrops71:   
         EEPROM.write(7, 1);
         break;
@@ -357,6 +389,10 @@ byte processMenuCommand(byte cmdId)
         EEPROM.write(7, 5);
         break;
 ////////////////////////////////////////
+      case mnuCmddrops80:
+        EEPROM.write(8, 0);
+        break;
+
       case mnuCmddrops81:   
         EEPROM.write(8, 1);
         break;
