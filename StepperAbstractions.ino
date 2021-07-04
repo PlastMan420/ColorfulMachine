@@ -14,8 +14,8 @@ void StepperInit() {
 }
 
 void GoToPlace(int hops) {
-  currentPosition += STEPS * hops;
-
+  currentPosition = STEPS * hops;
+  
   carousel.runToNewPosition(currentPosition);
   
 }
