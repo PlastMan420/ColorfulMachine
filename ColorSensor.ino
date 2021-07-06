@@ -217,7 +217,7 @@ void Output(byte colorIdx) {
   }
 
   GoToPlace(drop);
-  PushItem();
+  PushItem(false);
 }
 
 
